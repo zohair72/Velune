@@ -117,7 +117,4 @@ Notes:
 - The Edge Function uses the built-in `SUPABASE_SERVICE_ROLE_KEY` inside the function runtime for database and Storage cleanup.
 - The cron job should call the function with a service-role bearer token from Vault, not a hardcoded secret in source control.
 
-## Current status
-
-The storefront UI still uses the existing theme and structure. Product rendering is still hardcoded for now, and the next step is replacing those mock product entries with live Supabase reads.
   
