@@ -128,6 +128,27 @@ export const Home = () => {
         </div>
       </section>
 
+      <section className="bg-[#161413] px-6 py-16 text-[#F4EFE6]">
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-[#2A2624] bg-[#121110] px-8 py-10 text-center">
+          <p className="font-cinzel text-xs uppercase tracking-[0.3em] text-[#C19A5B]">
+            Order Tracking
+          </p>
+          <h2 className="mt-4 font-cinzel text-3xl md:text-4xl">
+            Already sealed an order?
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl font-lora text-lg leading-8 text-[#A39E98]">
+            Return to your order tracker anytime to review the latest payment and
+            delivery progress for your Velune blend.
+          </p>
+          <Link
+            to="/track-order"
+            className="mt-8 inline-flex items-center justify-center gap-3 rounded-sm bg-[#C19A5B] px-10 py-4 font-cinzel text-sm uppercase tracking-widest text-[#1A1817] transition-all duration-300 hover:bg-[#F4EFE6]"
+          >
+            Track Existing Order <MoveRight size={18} />
+          </Link>
+        </div>
+      </section>
+
       <section id="apothecary-shelf" className="bg-[#1A1817] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 text-center">

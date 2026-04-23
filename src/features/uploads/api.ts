@@ -2,8 +2,10 @@ import { requireSupabase } from "../../utils/supabase";
 
 const PAYMENT_PROOFS_BUCKET = "payment-proofs";
 const PRODUCT_IMAGES_BUCKET = "product-images";
-const MAX_PAYMENT_PROOF_BYTES = 5 * 1024 * 1024;
+const MAX_PAYMENT_PROOF_BYTES = 2 * 1024 * 1024;
 const MAX_PRODUCT_IMAGE_BYTES = 5 * 1024 * 1024;
+const PAYMENT_PROOF_SIZE_ERROR_MESSAGE =
+  "File size exceeds 2 MB. Please retry with a smaller file.";
 
 const allowedPaymentProofTypes = new Set([
   "image/jpeg",
@@ -70,7 +72,7 @@ export const validatePaymentProofFile = (file: File | null | undefined) => {
   }
 
   if (file.size > MAX_PAYMENT_PROOF_BYTES) {
-    return "Payment proof must be 5MB or smaller.";
+    return PAYMENT_PROOF_SIZE_ERROR_MESSAGE;
   }
 
   return null;

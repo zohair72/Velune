@@ -22,6 +22,7 @@ import {
   normalizePakistanPhoneNumber,
   pakistanPhoneValidationMessage,
 } from "../../../utils/phone";
+import { saveOrderTrackingDetails } from "../../../utils/orderTracking";
 
 type CheckoutFormState = {
   fullName: string;
@@ -236,8 +237,10 @@ export const CheckoutPage = () => {
 
   const handlePaymentProofChange = (file: File | null) => {
     setPaymentProofFile(file);
-    setErrors((prev) => ({ ...prev, paymentProof: undefined }));
-    setSubmitError(null);
+    const paymentProofError = validatePaymentProofFile(file);
+
+    setErrors((prev) => ({ ...prev, paymentProof: paymentProofError ?? undefined }));
+    setSubmitError(paymentProofError);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -255,7 +258,10 @@ export const CheckoutPage = () => {
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      setSubmitError("Please complete the highlighted checkout details.");
+      setSubmitError(
+        validationErrors.paymentProof ??
+          "Please complete the highlighted checkout details.",
+      );
       return;
     }
 
@@ -306,6 +312,12 @@ export const CheckoutPage = () => {
       }
 
       clearCauldron();
+      saveOrderTrackingDetails({
+        orderNumber: createdOrder.orderNumber,
+        phoneNumber:
+          normalizePakistanPhoneNumber(formValues.phoneNumber) ??
+          formValues.phoneNumber.trim(),
+      });
 
       navigate(`/order-confirmation/${createdOrder.orderNumber}`, {
         state: {
@@ -643,7 +655,7 @@ export const CheckoutPage = () => {
                           Payment Proof
                         </p>
                         <p className="mt-2 font-lora text-sm text-[#A39E98]">
-                          Required for Manual Payment. Upload a JPG, PNG, WEBP, or PDF up to 5MB.
+                          Required for Manual Payment. Upload a JPG, PNG, WEBP, or PDF up to 2 MB.
                         </p>
                         <input
                           type="file"
