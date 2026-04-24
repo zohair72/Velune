@@ -31,6 +31,17 @@ export type CreateOrderInput = {
   subtotal: number;
 };
 
+type OrderNotificationPayload = {
+  order_number: string;
+  customer_name: string;
+  phone: string;
+  city: string;
+  payment_method: string;
+  payment_status: string;
+  order_status: string;
+  subtotal: number;
+};
+
 export type CreatedOrder = {
   id: string;
   orderNumber: string;
@@ -213,6 +224,35 @@ const getLegacyOrderStatus = () => "new";
 
 const getDisplayPaymentMethod = (paymentMethod: CheckoutPaymentMethod) =>
   paymentMethod === "cod" ? "Cash on Delivery" : "Manual Payment";
+
+const buildOrderNotificationPayload = (
+  input: CreateOrderInput,
+  order: CreatedOrder,
+): OrderNotificationPayload => ({
+  order_number: order.orderNumber,
+  customer_name: input.customer.fullName.trim(),
+  phone: input.customer.phoneNumber.trim(),
+  city: input.customer.city.trim(),
+  payment_method: getDisplayPaymentMethod(input.customer.paymentMethod),
+  payment_status: order.paymentStatus,
+  order_status: order.orderStatus,
+  subtotal: roundCurrency(input.subtotal),
+});
+
+const sendOrderNotificationEmail = async (
+  input: CreateOrderInput,
+  order: CreatedOrder,
+): Promise<void> => {
+  const supabase = requireSupabase();
+  const payload = buildOrderNotificationPayload(input, order);
+  const { error } = await supabase.functions.invoke("notify-order-email", {
+    body: payload,
+  });
+
+  if (error) {
+    throw error;
+  }
+};
 
 const isStockSubmissionError = (message: string) =>
   /stock|out of stock|insufficient|not enough|only .* available/i.test(message);
@@ -529,12 +569,21 @@ export const submitOrder = async (input: CreateOrderInput): Promise<CreatedOrder
         });
       }
 
-      return normalizeRpcResult(
+      const createdOrder = normalizeRpcResult(
         attempt.data as RpcOrderResult | RpcOrderResult[] | string | null,
         orderNumber,
         paymentStatus,
         orderStatus,
       );
+
+      void sendOrderNotificationEmail(input, createdOrder).catch((error) => {
+        console.warn(
+          "Velune order email notification failed after order creation.",
+          error,
+        );
+      });
+
+      return createdOrder;
     }
 
     const errorMessage = getErrorMessage(attempt.error);

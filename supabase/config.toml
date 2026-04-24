@@ -1,0 +1,2 @@
+[functions.notify-order-email]
+verify_jwt = false
