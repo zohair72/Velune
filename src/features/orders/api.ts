@@ -239,56 +239,19 @@ const buildOrderNotificationPayload = (
   subtotal: roundCurrency(input.subtotal),
 });
 
-const getOrderNotificationDebugSummary = (
-  payload: OrderNotificationPayload,
-): Record<string, string | number> => ({
-  functionName: "notify-order-email",
-  orderNumber: payload.order_number,
-  customerName: payload.customer_name,
-  phone: payload.phone,
-  city: payload.city,
-  paymentMethod: payload.payment_method,
-  paymentStatus: payload.payment_status,
-  orderStatus: payload.order_status,
-  subtotal: payload.subtotal,
-});
-
 const sendOrderNotificationEmail = async (
   input: CreateOrderInput,
   order: CreatedOrder,
 ): Promise<void> => {
   const supabase = requireSupabase();
   const payload = buildOrderNotificationPayload(input, order);
-  const debugSummary = getOrderNotificationDebugSummary(payload);
-
-  console.info(
-    "[Velune Debug] Starting notify-order-email function call after order success.",
-    debugSummary,
-  );
-
-  const { data, error } = await supabase.functions.invoke("notify-order-email", {
+  const { error } = await supabase.functions.invoke("notify-order-email", {
     body: payload,
   });
 
   if (error) {
-    console.error(
-      "[Velune Debug] notify-order-email function call failed.",
-      {
-        ...debugSummary,
-        error,
-        message: error instanceof Error ? error.message : String(error),
-      },
-    );
     throw error;
   }
-
-  console.info(
-    "[Velune Debug] notify-order-email function call succeeded.",
-    {
-      ...debugSummary,
-      response: data,
-    },
-  );
 };
 
 const isStockSubmissionError = (message: string) =>
@@ -613,23 +576,10 @@ export const submitOrder = async (input: CreateOrderInput): Promise<CreatedOrder
         orderStatus,
       );
 
-      console.info(
-        "[Velune Debug] Order creation succeeded. notify-order-email will now be invoked.",
-        {
-          orderNumber: createdOrder.orderNumber,
-          paymentStatus: createdOrder.paymentStatus,
-          orderStatus: createdOrder.orderStatus,
-        },
-      );
-
       void sendOrderNotificationEmail(input, createdOrder).catch((error) => {
         console.warn(
-          "[Velune Debug] Order completed successfully, but notify-order-email failed.",
-          {
-            orderNumber: createdOrder.orderNumber,
-            error,
-            message: error instanceof Error ? error.message : String(error),
-          },
+          "Velune order email notification failed after order creation.",
+          error,
         );
       });
 
