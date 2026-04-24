@@ -16,6 +16,13 @@ const jsonHeaders = {
   "Content-Type": "application/json",
 };
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 const requiredFields: Array<keyof OrderNotificationPayload> = [
   "order_number",
   "customer_name",
@@ -77,6 +84,12 @@ function getEnv(name: string): string {
 }
 
 Deno.serve(async (request) => {
+  if (request.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: corsHeaders,
+    });
+  }
+
   if (request.method !== "POST") {
     return Response.json(
       {
@@ -86,6 +99,7 @@ Deno.serve(async (request) => {
       {
         status: 405,
         headers: {
+          ...corsHeaders,
           ...jsonHeaders,
           Allow: "POST",
         },
@@ -111,7 +125,10 @@ Deno.serve(async (request) => {
       },
       {
         status: 400,
-        headers: jsonHeaders,
+        headers: {
+          ...corsHeaders,
+          ...jsonHeaders,
+        },
       },
     );
   }
@@ -127,7 +144,10 @@ Deno.serve(async (request) => {
       },
       {
         status: 400,
-        headers: jsonHeaders,
+        headers: {
+          ...corsHeaders,
+          ...jsonHeaders,
+        },
       },
     );
   }
@@ -209,7 +229,10 @@ Deno.serve(async (request) => {
       },
       {
         status: 200,
-        headers: jsonHeaders,
+        headers: {
+          ...corsHeaders,
+          ...jsonHeaders,
+        },
       },
     );
   } catch (error) {
@@ -227,7 +250,10 @@ Deno.serve(async (request) => {
       },
       {
         status: 500,
-        headers: jsonHeaders,
+        headers: {
+          ...corsHeaders,
+          ...jsonHeaders,
+        },
       },
     );
   }
